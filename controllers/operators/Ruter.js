@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var request = require('request');
-
 var busStopModel = require('../../models/busStop');
+var coordinator = require('coordinator');
 
 var busStopsURL = "http://reisapi.ruter.no/Place/GetStopsRuter?json=true";
 var stopVisitURL = "";
@@ -13,7 +13,7 @@ var utmZone = 32;
 
 exports.updateBusStops = function(){
 	clearDB();
-
+	
 	request({
 		url: busStopsURL,
 		json: true
@@ -27,31 +27,41 @@ exports.updateBusStops = function(){
 	)
 }
 
-
+// Removes 
 function clearDB(){
-	busStopModel.remove({operator: operatorName}), function(err){
+	console.log("clearing database");
+	busStopModel.remove({Operator: operatorName}, function(err){
+		console.log("cleared");
 		if(err) 
 			console.log(err);
 		else
 			console.log('collection removed: ' + operatorName);
-	}
+	})
 }
 
 function saveToDB(busStop){
-	// var pos = convertToLatLong(coordinateSystem, busStop.X, busStop.Y, utmZone);
+	var pos = convertToLatLong(busStop.X, busStop.Y);
+
 	var newBusStop = new busStopModel({
 		ID: busStop.ID,
 		Name: busStop.Name,
 		City: busStop.District,
 		Position: {
-			Latitude: busStop.X,
-			Longitude: busStop.Y
+			Latitude: pos.latitude,
+			Longitude: pos.longitude
 		},
 		Operator: operatorName,
 		BusLines: [],
 		LastUpdated: new Date()
 	});
+
 	newBusStop.save(function(err, stored){
 		if(err) console.log(err);
 	})
+}
+
+
+function convertToLatLong(X, Y){
+	var converter = coordinator(coordinateSystem, 'latlong');
+	return converter(Y, X, utmZone);
 }
