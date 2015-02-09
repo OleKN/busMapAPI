@@ -5,15 +5,15 @@ var mongoose = require('mongoose')
         ,Schema = mongoose.Schema
         busStopSchema = new Schema( {
         	ID: Number,
-                name: String,
-                city: String,
-                Position{
+                Name: String,
+                City: String,
+                Position: {
                         Latitude: Number,
                         Longitude: Number
                 },
-                operator: String,
-                busLines: [ {type: Number} ],
-                lastUpdated: Date
+                Operator: String,
+                BusLines: [ {type: Number} ],
+                LastUpdated: Date
         })
 BusStop = mongoose.model('busStop', busStopSchema);
 
