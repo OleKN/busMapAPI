@@ -21,9 +21,9 @@ exports.getBusStopsOnLine = function(req,res){
 	.where('Operator').equals(operatorParam)
 	.exec(function(err, busLine){
 		if(err) return console.error(err);
-		//if(busLine==null){
-		//	res.send();
-		//}
+		if(busLine==null){
+			res.send();
+		}
 		console.log(busLine);
 		var busStopIDs = busLine[0].BusStops;
 		var busStops = [];
@@ -42,18 +42,10 @@ exports.getBusStopsOnLine = function(req,res){
 				});
 			} else {
 				res.send(busStops);
-				//return final();
 			}
 		}
 		series(busStopIDs.shift());
 
 	})
-/*
-	busLineModel.find({Operator: operatorParam}, function(err, busLineList){
-		if(err)
-			return console.error(err);
-
-
-	})*/
 }
 
