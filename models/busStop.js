@@ -12,7 +12,7 @@ var mongoose = require('mongoose')
                         Longitude: Number
                 },
                 Operator: String,
-                BusLines: [ {type: Number} ],
+                //BusLines: [ {type: Number} ],
                 LastUpdated: Date
         })
 BusStop = mongoose.model('busStop', busStopSchema);
