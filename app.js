@@ -9,18 +9,23 @@ mongoose.connect('mongodb://localhost/busAPI');
 
 var operatorList = [];
 
-/*
+
 // Opens all operator configs, and updates their bus stops
 // To add another Operator, just add the file to ./controllers/operators/
 fs.readdirSync('./controllers/operators').forEach(function (file) {
   if(file.substr(-3) == '.js') {
       route = require('./controllers/operators/' + file);
-      route.updateBusStops();
-      route.updateBusLines();
+      route.updateBusStops(function(){
+      	console.log("updated stops for " + file);
+      	route.updateBusLines(function(){
+      		console.log("updated lines for " + file);
+      	});
+      });
+      
       operatorList.push(route);
   }
 });
-*/
+
 
 
 app.get('/', function (req, res) {
