@@ -27,7 +27,25 @@ exports.getBusLocationByLine = function(req, res){
 }
 
 function getBusLocation(operator, busLineName, callback){
-	getRealTimeBusLineArrivals(operator, busLineName, function(arrivals)
+	getRealTimeBusLineArrivals(operator, busLineName, function(arrivals){
+
+
+		// Sort by busID and arrival time
+		arrivals.sort(function(a, b){
+			if(a.MonitoredVehicleJourney.VehicleRef > b.MonitoredVehicleJourney.VehicleRef)
+				return 1;
+			if(a.MonitoredVehicleJourney.VehicleRef < b.MonitoredVehicleJourney.VehicleRef)
+				return -1;
+			if(a.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime > b.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime)
+				return 1;
+			if(a.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime < b.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime)
+				return -1;
+			return 0;
+		})
+
+
+
+
 		// Do a database lookup into bus stop positions
 		var cb = _.after(arrivals.length, callback);
 
