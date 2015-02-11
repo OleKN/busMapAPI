@@ -25,18 +25,32 @@ exports.getBusLocationByLine = function(req, res){
 		res.send(arrivalList);
 	})
 }
-/*
+
 function getBusLocation(operator, busLineName, callback){
-	getRealTimeBusLineArrivals(operator, busLineName, function(arrivals){
-		// filter nulls
+	getRealTimeBusLineArrivals(operator, busLineName, function(arrivals)
+		// Do a database lookup into bus stop positions
+		var cb = _.after(arrivals.length, callback);
 
-		// sort by busID and arrival time
-
-	}
+		for(var i = 0; i < arrivals.length; i++){
+			// function that will store i for each iteration, 
+			// so that i can be used in each async call
+			(function(index){
+				busStopModel.find({Operator: operator})
+				.where('ID').equals(arrivals[index].MonitoringRef)
+				.exec(function(err, busStop){
+					if(err) return console.error(err);
+					if(busStop[0] == null) return console.log("Unable to find bus stop");
+					console.log(busStop);
+					arrivals[index].busStopPosition = busStop[0].Position;
+					cb(arrivals);
+				})
+			})(i)
+		}
+	})
 }
-*/
 
-function getBusLocation(operator, busLineName, callback){
+
+function getRealTimeBusLineArrivals(operator, busLineName, callback){
 	// find bus stops in the DB
 	busLineModel.find({Operator: operator})
 	.where("Name").equals(busLineName)
@@ -51,21 +65,25 @@ function getBusLocation(operator, busLineName, callback){
 
 		var cb = _.after(busStopIDs.length, function(arrivals){
 			callback(arrivals);
-
 		});
 
 		for(var i = 0; i < busStopIDs.length; i++){
+			//(function(busStopID){
 			request({
 				url: busStopVisitURL + busStopIDs[i] + "?json=true&linenames=" + busLineName,
 				json: true
 				}, function(error, reponse, busStopVisitList){
 					for(var y = 0; y < busStopVisitList.length; y++){
-						arrivals.push(busStopVisitList[y]);
+						if(busStopVisitList[y].MonitoredVehicleJourney.VehicleRef != null){
+							// add busStop ID to busStopVisitList[y]
+							// busStopVisitList[y].BusStopID = busStopID;
+							arrivals.push(busStopVisitList[y]);
+						}
 					}
-					cb(arrivals);
-					
+					cb(arrivals);					
 				}
 			)
+			//})(busStopIDs[i]);
 		}
 
 	})
