@@ -7,12 +7,23 @@ var mongoose = require('mongoose')
 		Name: String,
 		LineColor: String,
 		Operator: String,
-		BusStops: [ {type: Number} ], // DEPRECATED
-		BusStopVisits[ {
-			BusStop: Number,
-			MinutesSinceLast: Number,
-			MinutesWaitTime: Number
-		} ],
+
+		BusStops: [ {type: Number} ],
+		/*Direction: [ {
+			DirectionID: Number, // usually just '1' or '2'
+			DestinationName: String,
+			DestinationID: Number,
+			OriginName: String,
+			OriginID: Number,
+			BusStopVisits[ {
+				BusStop: Number,
+				MinutesSinceLast: Number,
+				MinutesWaitTime: Number
+			} ],
+
+		}],*/
+
+
 		Transportation: Number,
 		LastUpdated: Date
 	})

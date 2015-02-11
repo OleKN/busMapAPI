@@ -9,7 +9,7 @@ mongoose.connect('mongodb://localhost/busAPI');
 
 var operatorList = [];
 
-
+/*
 // Opens all operator configs, and updates their bus stops
 // To add another Operator, just add the file to ./controllers/operators/
 fs.readdirSync('./controllers/operators').forEach(function (file) {
@@ -25,7 +25,7 @@ fs.readdirSync('./controllers/operators').forEach(function (file) {
       operatorList.push(route);
   }
 });
-
+*/
 
 
 app.get('/', function (req, res) {
@@ -35,7 +35,7 @@ app.get('/', function (req, res) {
 // Returns a list of all bus stops from a bus operator
 app.get('/Stops/getBusStops/:operator', busStopController.getBusStops);
 app.get('/Stops/getBusStopsOnLine/:operator/:lineID', busStopController.getBusStopsOnLine);
-app.get('/Bus/getBusLocationByLine/:operator/:lineID', busLocationController.getBusLocationByLine);
+app.get('/Bus/getBusLocationByLine/:operator/:lineName', busLocationController.getBusLocationByLine);
 app.get('/Bus/getBusLinesByOperator/:operator', busLocationController.getBusLinesByOperator);
 // Returns the list of operators currently supported by the system
 app.get('/getAvailableOperators/', getOperatorNames);

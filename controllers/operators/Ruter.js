@@ -121,6 +121,7 @@ function saveLineToDB(busLine, busStopList, callback){
 		LineColor: busLine.LineColour,
 		Operator: operatorName,
 		BusStops: busStopIDList,
+		Transportation: busLine.Transportation,
 		LastUpdated: new Date()
 	});
 
@@ -130,9 +131,4 @@ function saveLineToDB(busLine, busStopList, callback){
 		else
 			callback();
 	})
-}
-
-
-function updateArrivalTimesAtStops(){
-	// Use this: http://reisapi.ruter.no/Trip/GetTrip/3601?time=10022015143800&json=true
 }
