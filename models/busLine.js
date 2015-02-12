@@ -1,40 +1,8 @@
-//Model for storing information about lines
-//Which stops they visit, and which order
-var mongoose = require('mongoose')
-	,Schema = mongoose.Schema
-	lineSchema = new Schema( {
-		LineID: Number,
-		Name: String,
-		LineColor: String,
-		Operator: String,
-
-		BusStops: [ {type: Number} ],
-		/*Direction: [ {
-			DirectionID: Number, // usually just '1' or '2'
-			DestinationName: String,
-			DestinationID: Number,
-			OriginName: String,
-			OriginID: Number,
-			BusStopVisits[ {
-				BusStop: Number,
-				MinutesSinceLast: Number,
-				MinutesWaitTime: Number
-			} ],
-
-		}],*/
+// Model for storing information about lines
+// Type of transport, name, which stops they visit and in which order
 
 
-		Transportation: Number,
-		LastUpdated: Date
-	})
-
-BusLine = mongoose.model('busLine', lineSchema);
-
-module.exports = BusLine;
-
-
-
-//Transportation explained:
+//Transportation field explained:
 // 0 Walking
 // 1 AirportBus	
 // 2 Bus	
@@ -44,3 +12,19 @@ module.exports = BusLine;
 // 6 Train	
 // 7 Tram	
 // 8 Metro
+
+var mongoose = require('mongoose')
+	,Schema = mongoose.Schema
+	lineSchema = new Schema( {
+		LineID: Number,
+		Name: String,
+		LineColor: String,
+		Operator: String,
+		BusStops: [ {type: Number} ],
+		Transportation: Number,
+		LastUpdated: Date
+	})
+
+BusLine = mongoose.model('busLine', lineSchema);
+
+module.exports = BusLine;

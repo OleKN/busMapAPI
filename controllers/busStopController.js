@@ -12,11 +12,13 @@ exports.getBusStops = function(req,res){
 	})
 }
 
+// finds all bus stops on a given line
 exports.getBusStopsOnLine = function(req,res){
 	var operatorParam = req.params.operator;
 	var lineIDParam = req.params.lineID;
 	console.log("params: " + operatorParam + ", " + lineIDParam);
 
+	// Finds all bus stop ids on a line
 	busLineModel.find({LineID: lineIDParam})
 	.where('Operator').equals(operatorParam)
 	.exec(function(err, busLine){
@@ -28,7 +30,8 @@ exports.getBusStopsOnLine = function(req,res){
 		var busStopIDs = busLine[0].BusStops;
 		var busStops = [];
 
-		//function for ensuring that the async calls are in the same order as the list
+		// function for ensuring that the async calls are in the same order as the list
+		// It asks for all bus stops given the IDs found in the given bus Line
 		function series(busStopID){
 			console.log(busStopID);
 			if(busStopID){

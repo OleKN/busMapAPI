@@ -8,24 +8,8 @@ var busLocationController = require('./controllers/busLocationController');
 mongoose.connect('mongodb://localhost/busAPI');
 
 var operatorList = [];
-
-/*
-// Opens all operator configs, and updates their bus stops
-// To add another Operator, just add the file to ./controllers/operators/
-fs.readdirSync('./controllers/operators').forEach(function (file) {
-  if(file.substr(-3) == '.js') {
-      route = require('./controllers/operators/' + file);
-      route.updateBusStops(function(){
-      	console.log("updated stops for " + file);
-      	route.updateBusLines(function(){
-      		console.log("updated lines for " + file);
-      	});
-      });
-      
-      operatorList.push(route);
-  }
-});
-*/
+// Uncomment this to update the database
+//updateAllOperators();
 
 
 app.get('/', function (req, res) {
@@ -34,15 +18,27 @@ app.get('/', function (req, res) {
 
 // Returns a list of all bus stops from a bus operator
 app.get('/Stops/getBusStops/:operator', busStopController.getBusStops);
+// Returns a list of stops on a given line. This should be the order in which they are visited 
 app.get('/Stops/getBusStopsOnLine/:operator/:lineID', busStopController.getBusStopsOnLine);
+// Returns all bus stop visits, that have a valid vehicle. It is sorted by vehicleID and expected arrival time.
 app.get('/Bus/getBusLocationByLine/:operator/:lineName', busLocationController.getBusLocationByLine);
+// Returns a list of all bus lines provided by an operator
 app.get('/Bus/getBusLinesByOperator/:operator', busLocationController.getBusLinesByOperator);
 // Returns the list of operators currently supported by the system
 app.get('/getAvailableOperators/', getOperatorNames);
 
+// Starts the server
+var server = app.listen(3000, function () {
+  var host = server.address().address
+  var port = server.address().port
+
+  console.log('Example app listening at http://%s:%s', host, port)
+})
 
 
 
+
+// Used to present which operators are available on the API
 function getOperatorNames(req, res){
 	var nameList = [];
 	for(var i = operatorList.length - 1; i >= 0; i--){
@@ -51,11 +47,20 @@ function getOperatorNames(req, res){
 	res.send(nameList);
 }
 
-
-
-var server = app.listen(3000, function () {
-  var host = server.address().address
-  var port = server.address().port
-
-  console.log('Example app listening at http://%s:%s', host, port)
-})
+// Opens all operator configs, and updates their bus stops
+// To add another Operator, just add the file to ./controllers/operators/
+function updateAllOperators(){
+  fs.readdirSync('./controllers/operators').forEach(function (file) {
+    if(file.substr(-3) == '.js') {
+        route = require('./controllers/operators/' + file);
+        route.updateBusStops(function(){
+          console.log("updated stops for " + file);
+          route.updateBusLines(function(){
+            console.log("updated lines for " + file);
+          });
+        });
+        
+        operatorList.push(route);
+    }
+  });
+}

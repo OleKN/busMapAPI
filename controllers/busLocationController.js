@@ -7,7 +7,7 @@ var _ = require('underscore');
 
 var busStopVisitURL = "http://reisapi.ruter.no/stopvisit/GetDepartures/"; // + StopID + ?json=true&linenames= + ID
 
-
+// returns all bus Lines, from the database for a given bus operator
 exports.getBusLinesByOperator = function(req, res){
 	var operatorParam = req.params.operator;
 
@@ -18,6 +18,7 @@ exports.getBusLinesByOperator = function(req, res){
 	})
 }
 
+// Returns all buses stop visits, for all buses for a given line and operator
 exports.getBusLocationByLine = function(req, res){
 	var operatorParam = req.params.operator;
 	var lineNameParam = req.params.lineName;
@@ -47,6 +48,7 @@ function getBusLocation(operator, busLineName, callback){
 
 
 		// Do a database lookup into bus stop positions
+
 		var cb = _.after(arrivals.length, callback);
 
 		for(var i = 0; i < arrivals.length; i++){
@@ -56,8 +58,10 @@ function getBusLocation(operator, busLineName, callback){
 				busStopModel.find({Operator: operator})
 				.where('ID').equals(arrivals[index].MonitoringRef)
 				.exec(function(err, busStop){
-					if(err) return console.error(err);
-					if(busStop[0] == null) return console.log("Unable to find bus stop");
+					if(err) 
+						return console.error(err);
+					if(busStop[0] == null) 
+						return console.log("Unable to find bus stop");
 					console.log(busStop);
 					arrivals[index].busStopPosition = busStop[0].Position;
 					cb(arrivals);
@@ -67,7 +71,8 @@ function getBusLocation(operator, busLineName, callback){
 	})
 }
 
-
+// Looks up all bus stops for the given line and operator
+// it then sends all arrival times to the callback function
 function getRealTimeBusLineArrivals(operator, busLineName, callback){
 	// find bus stops in the DB
 	busLineModel.find({Operator: operator})
@@ -81,27 +86,25 @@ function getRealTimeBusLineArrivals(operator, busLineName, callback){
 		var busStopIDs = busLine[0].BusStops;
 		var arrivals = [];
 
+		// Function that will call callback once all the bus stops have been queried for arrivals
 		var cb = _.after(busStopIDs.length, function(arrivals){
 			callback(arrivals);
 		});
 
+		// Ask for bus stop visits for every bus stop for a given line
 		for(var i = 0; i < busStopIDs.length; i++){
-			//(function(busStopID){
 			request({
 				url: busStopVisitURL + busStopIDs[i] + "?json=true&linenames=" + busLineName,
 				json: true
 				}, function(error, reponse, busStopVisitList){
 					for(var y = 0; y < busStopVisitList.length; y++){
 						if(busStopVisitList[y].MonitoredVehicleJourney.VehicleRef != null){
-							// add busStop ID to busStopVisitList[y]
-							// busStopVisitList[y].BusStopID = busStopID;
 							arrivals.push(busStopVisitList[y]);
 						}
 					}
 					cb(arrivals);					
 				}
 			)
-			//})(busStopIDs[i]);
 		}
 
 	})

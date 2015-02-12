@@ -48,6 +48,7 @@ function clearDB(model, callback){
 function saveStopToDB(busStop, callback){
 	var pos = convertToLatLong(busStop.X, busStop.Y);
 
+	// Save values to a model
 	var newBusStop = new busStopModel({
 		ID: busStop.ID,
 		Name: busStop.Name,
@@ -61,6 +62,7 @@ function saveStopToDB(busStop, callback){
 		LastUpdated: new Date()
 	});
 
+	// Save the bus stop model to the database
 	newBusStop.save(function(err, stored){
 		if(err) 
 			console.log(err);
@@ -86,6 +88,7 @@ exports.updateBusLines = function(callback){
 		json: true
 		}, function(error, response, busLineList){
 			if(!error && response.statusCode === 200){
+				// function that will call the callback function once all busLines are added to the list
 				var cb = _.after(busLineList.length, callback);
 				for(var i = busLineList.length - 1; i >= 0; i--){
 					findBusStopsForLine(busLineList[i], cb);
@@ -95,7 +98,7 @@ exports.updateBusLines = function(callback){
 	});
 }
 
-// Finds all bus stops on a line by querying Ruter's API
+// Finds all bus stops on a line by querying Ruter's API, and saves them in the database
 function findBusStopsForLine(busLine, callback){
 	request({
 		url: busStopsByLineURL + busLine.ID + "?json=true",

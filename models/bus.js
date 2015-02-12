@@ -1,3 +1,4 @@
+// CURRENTLY UNUSED
 //Model for storing information about the individual buses
 var mongoose = require('mongoose')
 	,Schema = mongoose.Schema
