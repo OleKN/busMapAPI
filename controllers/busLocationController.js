@@ -11,7 +11,7 @@ var busStopVisitURL = "http://reisapi.ruter.no/stopvisit/GetDepartures/"; // + S
 exports.getBusLinesByOperator = function(req, res){
 	var operatorParam = req.params.operator;
 
-	busLineModel.find({Operator: operatorParam}, function(err, busLineList){
+	busLineModel.find({Operator: operatorParam , BusStops: {$ne: []}} , {_id: 0, __v: 0}, function(err, busLineList){
 		if(err)
 			return console.error(err);
 		res.send(busLineList);
@@ -62,7 +62,6 @@ function getBusLocation(operator, busLineName, callback){
 						return console.error(err);
 					if(busStop[0] == null) 
 						return console.log("Unable to find bus stop");
-					console.log(busStop);
 					arrivals[index].busStopPosition = busStop[0].Position;
 					cb(arrivals);
 				})

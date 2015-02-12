@@ -5,7 +5,7 @@ var busLineModel = require('../models/busLine');
 exports.getBusStops = function(req,res){
 	var operatorParam = req.params.operator;
 
-	busStopModel.find({Operator: operatorParam}, function(err, busStopList){
+	busStopModel.find({Operator: operatorParam} , { _id: 0, __v: 0}, function(err, busStopList){
 		if(err)
 			return console.error(err);
 		res.send(busStopList);
@@ -16,7 +16,6 @@ exports.getBusStops = function(req,res){
 exports.getBusStopsOnLine = function(req,res){
 	var operatorParam = req.params.operator;
 	var lineIDParam = req.params.lineID;
-	console.log("params: " + operatorParam + ", " + lineIDParam);
 
 	// Finds all bus stop ids on a line
 	busLineModel.find({LineID: lineIDParam})
@@ -35,11 +34,10 @@ exports.getBusStopsOnLine = function(req,res){
 		function series(busStopID){
 			console.log(busStopID);
 			if(busStopID){
-				busStopModel.find({Operator: operatorParam})//({ID: busStopID})
+				busStopModel.find({Operator: operatorParam} , { _id: 0, __v: 0})//({ID: busStopID})
 				.where('ID').equals(busStopID)
 				.exec(function(err, busStop){
 					if(err) console.log(err);
-					console.log(busStop[0]);
 					busStops.push(busStop[0]);
 					return series(busStopIDs.shift());
 				});
