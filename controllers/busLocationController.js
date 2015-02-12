@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var busStopModel = require('../models/busStop');
 var busLineModel = require('../models/busLine');
+//var stopVisitModel = require('../models/stopVisit');
 var busStopController = require('./busStopController');
 var request = require('request');
 var _ = require('underscore');
@@ -18,93 +19,75 @@ exports.getBusLinesByOperator = function(req, res){
 	})
 }
 
-// Returns all buses stop visits, for all buses for a given line and operator
-exports.getBusLocationByLine = function(req, res){
+// Returns a list of all bus stops on a line, with Real-Time arrival times of buses on those stops
+exports.getRealTimeLineInfo = function(req, res){
 	var operatorParam = req.params.operator;
 	var lineNameParam = req.params.lineName;
-	getBusLocation(operatorParam, lineNameParam, function(arrivalList){
-		res.send(arrivalList);
-	})
-}
 
-function getBusLocation(operator, busLineName, callback){
-	getRealTimeBusLineArrivals(operator, busLineName, function(arrivals){
-
-
-		// Sort by busID and arrival time
-		arrivals.sort(function(a, b){
-			if(a.MonitoredVehicleJourney.VehicleRef > b.MonitoredVehicleJourney.VehicleRef)
-				return 1;
-			if(a.MonitoredVehicleJourney.VehicleRef < b.MonitoredVehicleJourney.VehicleRef)
-				return -1;
-			if(a.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime > b.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime)
-				return 1;
-			if(a.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime < b.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime)
-				return -1;
-			return 0;
-		})
-
-
-
-
-		// Do a database lookup into bus stop positions
-
-		var cb = _.after(arrivals.length, callback);
-
-		for(var i = 0; i < arrivals.length; i++){
-			// function that will store i for each iteration, 
-			// so that i can be used in each async call
-			(function(index){
-				busStopModel.find({Operator: operator})
-				.where('ID').equals(arrivals[index].MonitoringRef)
-				.exec(function(err, busStop){
-					if(err) 
-						return console.error(err);
-					if(busStop[0] == null) 
-						return console.log("Unable to find bus stop");
-					arrivals[index].busStopPosition = busStop[0].Position;
-					cb(arrivals);
-				})
-			})(i)
-		}
-	})
-}
-
-// Looks up all bus stops for the given line and operator
-// it then sends all arrival times to the callback function
-function getRealTimeBusLineArrivals(operator, busLineName, callback){
-	// find bus stops in the DB
-	busLineModel.find({Operator: operator})
-	.where("Name").equals(busLineName)
+	// Look for bus stops for a given line
+	busLineModel.find({Operator: operatorParam, Name: lineNameParam})
 	.exec(function(err, busLine){
+		// check for errors in response from DB
 		if(err) 
 			return console.error(err);
 		if(!busLine[0])
-			return "No busLineName: " + busLineName + " found for operator: " + operator;
+			return "No busLineName: " + lineNameParam + " found for operator: " + operatorParam;
 		
 		var busStopIDs = busLine[0].BusStops;
-		var arrivals = [];
-
-		// Function that will call callback once all the bus stops have been queried for arrivals
-		var cb = _.after(busStopIDs.length, function(arrivals){
-			callback(arrivals);
+		var arrivalsList = [];
+		
+		// Function that will be called after every bus stop on that line has been queried for arrivals
+		var cb = _.after(busStopIDs.length, function(arrivalsList){
+			res.send(arrivalsList);
 		});
 
 		// Ask for bus stop visits for every bus stop for a given line
 		for(var i = 0; i < busStopIDs.length; i++){
-			request({
-				url: busStopVisitURL + busStopIDs[i] + "?json=true&linenames=" + busLineName,
-				json: true
-				}, function(error, reponse, busStopVisitList){
-					for(var y = 0; y < busStopVisitList.length; y++){
-						if(busStopVisitList[y].MonitoredVehicleJourney.VehicleRef != null){
-							arrivals.push(busStopVisitList[y]);
+			busStopModel.findOne({ID: busStopIDs[i], Operator: operatorParam} , function(err, busStop){
+				// Sends a request for all stops, to get real-time information about arrival times
+				request({
+					url: busStopVisitURL + busStop.ID + "?json=true&linenames=" + busStop.Name,
+					json: true
+					}, function(error, reponse, busStopVisitList){
+						var stopVisits = [];
+						// Store information about each arrival in a nice format
+						for(var x = 0; x < busStopVisitList.length; x++){
+							var newVisit = makeNewVisit(busStopVisitList[x]);
+							stopVisits.push(newVisit);
 						}
-					}
-					cb(arrivals);					
-				}
-			)
-		}
 
+						// Store information about each bus stop
+						var newStopVisitJSON = {
+							BusStopID: busStop.ID,
+							BusStopName: busStop.Name,
+							Position: busStop.Position,
+							StopVisits: stopVisits
+						}
+						arrivalsList.push(newStopVisitJSON);
+						cb(arrivalsList);				
+					}
+				)
+			})
+		}
 	})
+}
+
+function makeNewVisit(visit){
+	return {
+		VehicleID: visit.MonitoredVehicleJourney.VehicleRef,
+		LineID: visit.MonitoredVehicleJourney.LineRef,
+		LineName: visit.MonitoredVehicleJourney.PublishedLineName,
+		Direction: visit.MonitoredVehicleJourney.DirectionRef,
+		OriginID: visit.MonitoredVehicleJourney.OriginRef,
+		OriginName: visit.MonitoredVehicleJourney.OriginName,
+		DestinationID: visit.MonitoredVehicleJourney.DestinationRef,
+		DestinationName: visit.MonitoredVehicleJourney.DestinationName,
+		Arrival:
+		{
+			AimedArrivalTime: visit.MonitoredVehicleJourney.MonitoredCall.AimedArrivalTime,
+			ExpectedArrivalTime: visit.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime,
+			AimedDepartureTime: visit.MonitoredVehicleJourney.MonitoredCall.AimedDepartureTime,
+			ExpectedDepartureTime: visit.MonitoredVehicleJourney.MonitoredCall.ExpectedDepartureTime
+		}
+	}
 }

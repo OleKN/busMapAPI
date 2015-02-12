@@ -21,7 +21,7 @@ app.get('/Stops/getBusStops/:operator', busStopController.getBusStops);
 // Returns a list of stops on a given line. This should be the order in which they are visited 
 app.get('/Stops/getBusStopsOnLine/:operator/:lineID', busStopController.getBusStopsOnLine);
 // Returns all bus stop visits, that have a valid vehicle. It is sorted by vehicleID and expected arrival time.
-app.get('/Bus/getBusLocationByLine/:operator/:lineName', busLocationController.getBusLocationByLine);
+app.get('/Bus/getRealTimeLineInfo/:operator/:lineName', busLocationController.getRealTimeLineInfo);
 // Returns a list of all bus lines provided by an operator
 app.get('/Bus/getBusLinesByOperator/:operator', busLocationController.getBusLinesByOperator);
 // Returns the list of operators currently supported by the system
