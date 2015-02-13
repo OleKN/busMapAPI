@@ -44,16 +44,13 @@ exports.getRealTimeLineInfo = function(req, res){
 		// Ask for bus stop visits for every bus stop for a given line
 		for(var i = 0; i < busStopIDs.length; i++){
 			busStopModel.findOne({ID: busStopIDs[i], Operator: operatorParam} , function(err, busStop){
-				console.log(busStopVisitURL + busStop.ID + "?json=true&linenames=" + lineNameParam);
 				// Sends a request for all stops, to get real-time information about arrival times
-
 				request({
 					url: busStopVisitURL + busStop.ID + "?json=true&linenames=" + lineNameParam,
 					json: true
 					}, function(error, response, busStopVisitList){
 
 						if(!error && response.statusCode === 200){
-							console.log(busStopVisitList);
 							var stopVisits = [];
 							// Store information about each arrival in a nice format
 							for(var x = 0; x < busStopVisitList.length; x++){
@@ -72,7 +69,6 @@ exports.getRealTimeLineInfo = function(req, res){
 							cb(arrivalsList);				
 						}else{
 							console.error(error);
-							console.log(response);
 						}
 					}
 				)
