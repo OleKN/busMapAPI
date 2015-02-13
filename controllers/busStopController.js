@@ -25,14 +25,12 @@ exports.getBusStopsOnLine = function(req,res){
 		if(busLine==null){
 			res.send();
 		}
-		console.log(busLine);
 		var busStopIDs = busLine[0].BusStops;
 		var busStops = [];
 
 		// function for ensuring that the async calls are in the same order as the list
 		// It asks for all bus stops given the IDs found in the given bus Line
 		function series(busStopID){
-			console.log(busStopID);
 			if(busStopID){
 				busStopModel.find({Operator: operatorParam} , { _id: 0, __v: 0})//({ID: busStopID})
 				.where('ID').equals(busStopID)
