@@ -42,17 +42,18 @@ function getAllStopVisitsForRoute(operator, lineID, callback){
 		if(!busLine)
 			return console.log("No busLineID: " + lineID + " found for operator: " + operator);
 		
-		var busStopIDs = busLine.BusStops;
+		var busStops = busLine.BusStops;
 		var arrivalsList = [];
 		
 		// Function that will be called after every bus stop on that line has been queried for arrivals
-		var cb = _.after(busStopIDs.length, function(arrivalsList){
+		var cb = _.after(busStops.length, function(arrivalsList){
+			orderBusStopListForLine(arrivalsList);
 			callback(arrivalsList);
 		});
 
 		// Ask for bus stop visits for every bus stop for a given line
-		for(var i = 0; i < busStopIDs.length; i++){
-			busStopModel.findOne({ID: busStopIDs[i], Operator: operator} , function(err, busStop){
+		for(var i = 0; i < busStops.length; i++){
+			busStopModel.findOne({ID: busStops[i].BusStopID, Operator: operator} , function(err, busStop){
 				if(err || busStop ==null){
 					console.error(err);
 					console.log("Error for busStop: " + busStop);
@@ -117,6 +118,7 @@ exports.getBusPositionsOnLine = function(req, res){
 
 	getAllStopVisitsForRoute(operatorParam, lineIDParam, function(arrivalsList){
 		var vehicles = [];
+
 		for(var i=0; i<arrivalsList.length; i++){
 			var busStop = arrivalsList[i];
 
@@ -130,6 +132,8 @@ exports.getBusPositionsOnLine = function(req, res){
 				}
 			}
 		}
+
+
 
 		vehicles.sort(function(a, b){
 			if(a.VehicleID > b.VehicleID)
@@ -161,4 +165,14 @@ exports.getBusPositionsOnLine = function(req, res){
 
 		res.send(outList);
 	})
+}
+
+
+// Function that will ensure that the bus stops 
+// listed for a given route are in the correct order
+// It will also attempt to determine the time between the stops
+function orderBusStopListForLine(arrivalsList){
+	// Look at the current order and time listed in the db
+	// try to insert the proper time it takes between stops
+
 }

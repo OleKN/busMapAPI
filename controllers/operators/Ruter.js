@@ -11,6 +11,7 @@ var busStopsByLineURL = "http://reisapi.ruter.no/Line/GetStopsByLineID/"; // + I
 var operatorName = "Ruter";
 var coordinateSystem = "utm";
 var utmZone = 32;
+var fs = require ('fs');
 
 
 // TODO: use http://reisapi.ruter.no/Help/Api/GET-Meta-GetValidities
@@ -62,6 +63,8 @@ function saveStopToDB(busStop, callback){
 		LastUpdated: new Date()
 	});
 
+	//sendToFusionTables(newBusStop);
+
 	// Save the bus stop model to the database
 	newBusStop.save(function(err, stored){
 		if(err) 
@@ -69,6 +72,7 @@ function saveStopToDB(busStop, callback){
 		else
 			callback();
 	})
+
 }
 
 // Converts coordinates to LatLong
@@ -115,7 +119,12 @@ function findBusStopsForLine(busLine, callback){
 function saveLineToDB(busLine, busStopList, callback){
 	var busStopIDList = [];
 	for(var i = 0; i < busStopList.length; i++){
-		busStopIDList.push(busStopList[i].ID);
+		busStopIDList.push(
+			{
+				BusStopID: busStopList[i].ID,
+				TimeSinceLast: 0,
+				StopNumber: -1
+			});
 	}
 
 	var newBusLine = new busLineModel({
@@ -135,3 +144,14 @@ function saveLineToDB(busLine, busStopList, callback){
 			callback();
 	})
 }
+
+/*
+function sendToFusionTables(busStop){
+	console.log("Wrote to file")
+	fs.appendFileSync('./coordinates.csv', busStop.Name + 
+		"," + busStop.ID +
+		",\"" + busStop.Position.Latitude + "," + busStop.Position.Longitude + "\"" +
+		"\n"
+	);
+}
+*/
