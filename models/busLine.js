@@ -22,8 +22,12 @@ var mongoose = require('mongoose')
 		Operator: String,
 		BusStops: [ {
 			BusStopID: Number,
+		} ],
+		StopVisits: [ {
+			BusStopID: Number,
 			TimeSinceLast: Number,
-			StopNumber: Number
+			PreviousStopID: Number,
+			Direction: Number
 		} ],
 		Transportation: Number,
 		LastUpdated: Date

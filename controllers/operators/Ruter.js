@@ -123,7 +123,8 @@ function saveLineToDB(busLine, busStopList, callback){
 			{
 				BusStopID: busStopList[i].ID,
 				TimeSinceLast: 0,
-				StopNumber: -1
+				StopNumber: -1,
+				Direction: -1
 			});
 	}
 

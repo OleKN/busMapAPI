@@ -50,3 +50,14 @@ exports.getBusStopsOnLine = function(req,res){
 	})
 }
 
+exports.getBusLineInfo = function(req, res){
+	var operatorParam = req.params.operator;
+	var lineIDParam = req.params.lineID;
+
+	busLineModel.findOne({Operator: operatorParam , LineID: lineIDParam} , { _id: 0, __v: 0}, function(err, busLine){
+		if(err)
+			return console.error(err);
+		res.send(busLine);
+	})
+}
+
