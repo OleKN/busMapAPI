@@ -8,8 +8,9 @@ var busLocationController = require('./controllers/busLocationController');
 mongoose.connect('mongodb://localhost/busAPI');
 
 var operatorList = [];
-// Uncomment this to update the database
-updateAllOperators();
+var args = process.argv.slice(2);
+if(args[0] == "--updateDB")
+  updateAllOperators();
 
 
 app.get('/', function (req, res) {
@@ -26,7 +27,9 @@ app.get('/Stops/getBusLineInfo/:operator/:lineID', busStopController.getBusLineI
 app.get('/Bus/getRealTimeLineInfo/:operator/:lineID', busLocationController.getRealTimeLineInfo);
 // Returns a list of all bus lines provided by an operator
 app.get('/Bus/getBusLinesByOperator/:operator', busLocationController.getBusLinesByOperator);
-// Returns the locations of buses on a line
+// Returns a list of all arrivals for all buses on a line
+app.get('/Bus/getBusArrivalsOnLine/:operator/:lineID', busLocationController.getBusArrivalsOnLine);
+// Returns the positions of buses on a line
 app.get('/Bus/getBusPositionsOnLine/:operator/:lineID', busLocationController.getBusPositionsOnLine);
 // Returns the list of operators currently supported by the system
 app.get('/getAvailableOperators/', getOperatorNames);

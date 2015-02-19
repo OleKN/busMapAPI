@@ -21,13 +21,15 @@ var mongoose = require('mongoose')
 		LineColor: String,
 		Operator: String,
 		BusStops: [ {
-			BusStopID: Number,
+			type: Number
 		} ],
 		StopVisits: [ {
 			BusStopID: Number,
 			TimeSinceLast: Number,
 			PreviousStopID: Number,
-			Direction: Number
+			Direction: Number,
+			DestinationID: Number,
+			DestinationName: String
 		} ],
 		Transportation: Number,
 		LastUpdated: Date

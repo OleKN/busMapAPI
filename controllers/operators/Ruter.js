@@ -119,13 +119,7 @@ function findBusStopsForLine(busLine, callback){
 function saveLineToDB(busLine, busStopList, callback){
 	var busStopIDList = [];
 	for(var i = 0; i < busStopList.length; i++){
-		busStopIDList.push(
-			{
-				BusStopID: busStopList[i].ID,
-				TimeSinceLast: 0,
-				StopNumber: -1,
-				Direction: -1
-			});
+		busStopIDList.push(busStopList[i].ID);
 	}
 
 	var newBusLine = new busLineModel({
@@ -145,14 +139,3 @@ function saveLineToDB(busLine, busStopList, callback){
 			callback();
 	})
 }
-
-/*
-function sendToFusionTables(busStop){
-	console.log("Wrote to file")
-	fs.appendFileSync('./coordinates.csv', busStop.Name + 
-		"," + busStop.ID +
-		",\"" + busStop.Position.Latitude + "," + busStop.Position.Longitude + "\"" +
-		"\n"
-	);
-}
-*/
