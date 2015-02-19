@@ -47,7 +47,6 @@ function getAllStopVisitsForRoute(operator, lineID, callback){
 		
 		// Function that will be called after every bus stop on that line has been queried for arrivals
 		var cb = _.after(busStops.length, function(arrivalsList){
-			orderBusStopListForLine(arrivalsList);
 			callback(arrivalsList);
 		});
 
@@ -117,6 +116,7 @@ exports.getBusPositionsOnLine = function(req, res){
 	var lineIDParam = req.params.lineID;
 
 	getAllStopVisitsForRoute(operatorParam, lineIDParam, function(arrivalsList){
+
 		var vehicles = [];
 
 		for(var i=0; i<arrivalsList.length; i++){
@@ -162,7 +162,7 @@ exports.getBusPositionsOnLine = function(req, res){
 			outList[outList.length-1].Arrivals.push(vehicle);
 
 		}
-
+		orderBusStopListForLine(outList);
 		res.send(outList);
 	})
 }
@@ -171,8 +171,105 @@ exports.getBusPositionsOnLine = function(req, res){
 // Function that will ensure that the bus stops 
 // listed for a given route are in the correct order
 // It will also attempt to determine the time between the stops
-function orderBusStopListForLine(arrivalsList){
-	// Look at the current order and time listed in the db
-	// try to insert the proper time it takes between stops
+function orderBusStopListForLine(busList){
+	var stopsList = [];
+	// Direction, BusStopID, AimedArrivalTime
 
+	var lineID = -1;
+	for(var i = 0; i < busList.length; i++){
+		var arrivals = busList[i].Arrivals;
+		var lastStop = null;
+		for(var j = 0; j < arrivals.length; j++){
+			arrival = arrivals[j];
+			lineID = arrival.LineID;
+
+			if(lastStop != null && lastStop.Direction == arrival.Direction){
+				stopsList.push({
+					BusStopID: arrival.BusStopID,
+					TimeSinceLast: Math.abs(new Date(arrival.Arrival.AimedArrivalTime).getTime() - new Date(lastStop.AimedArrivalTime).getTime()),
+					PreviousStopID: lastStop.BusStopID,
+					Direction: arrival.Direction
+				})
+			}else{
+				stopsList.push({
+					BusStopID: arrival.BusStopID,
+					TimeSinceLast: null,
+					PreviousStopID: null,
+					Direction: arrival.Direction
+				})
+			}
+
+			lastStop = ({
+				BusStopID: arrival.BusStopID,
+				VehicleID: arrival.VehicleID,
+				AimedArrivalTime: arrival.Arrival.AimedArrivalTime,
+				ExpectedArrivalTime: arrival.Arrival.ExpectedArrivalTime,
+				AimedDepartureTime: arrival.Arrival.AimedDepartureTime,
+				ExpectedDepartureTime: arrival.Arrival.ExpectedDepartureTime,
+				Direction: arrival.Direction
+			})
+		}
+	}
+
+	updateArrivalTimesInDB(lineID, stopsList);
+}
+
+function updateArrivalTimesInDB(lineID, newStopsList, callback){
+	busLineModel.findOne({LineID: lineID} , function(err, busLine){
+		var stopVisits = busLine.StopVisits;
+		if(stopVisits == null){
+			stopVisits = [];
+		}
+		for(var i=0; i < newStopsList.length; i++){
+			newStop = newStopsList[i];
+			var existingStopVisit = getExistingBusStopInList(stopVisits, newStop);
+
+			if(existingStopVisit == null){
+				stopVisits.push(newStopsList[i]);
+
+			}else if(existingStopVisit.Stop.PreviousStopID == null){
+				existingStopVisit.Stop.PreviousStopID = newStop.PreviousStopID;
+				existingStopVisit.Stop.TimeSinceLast = newStop.TimeSinceLast;
+				stopVisits[existingStopVisit.Index] = existingStopVisit.Stop;
+
+			}else if(existingStopVisit.Stop.TimeSinceLast == null){
+				existingStopVisit.Stop.TimeSinceLast = newStop.TimeSinceLast;
+				stopVisits[existingStopVisit.Index] = existingStopVisit.Stop;
+
+			}else if(existingStopVisit.Stop.TimeSinceLast != newStop.TimeSinceLast ||
+					existingStopVisit.Stop.PreviousStopID != newStop.PreviousStopID){
+				console.log("BUG");
+				/*console.log("\nDescrepency detected when updating bus stop timing!\n");
+				console.log(existingStopVisit.Stop);
+				console.log("\nDiffers from \n");
+				console.log(newStop);
+				console.log("\n");*/
+			}
+		}
+
+
+		// Store new values to database
+		//busLine.StopVisits = stopVisits;
+		//console.log(busLine);
+		//busLineModel.findByIdAndUpdate(busLine._id, {$set: {}})
+		
+
+		busLineModel.update({LineID: busLine.LineID}, {"$set": {StopVisits: stopVisits}}, {upsert: true}, function(err, doc){
+			if(err) console.log(err);
+			console.log("updated: " + doc);
+		});
+	})	
+}
+
+function getExistingBusStopInList(busStopList, busStop){
+	for(var i = busStopList.length - 1; i >= 0; i--){
+		var currentStop = busStopList[i];
+		if(currentStop.BusStopID == busStop.BusStopID && currentStop.Direction == busStop.Direction){
+			return {
+				Stop: currentStop, 
+				Index: i
+			};
+		}
+	}
+	return null;
 }
