@@ -103,6 +103,7 @@ function makeNewVisit(visit){
 		DestinationName: visit.MonitoredVehicleJourney.DestinationName,
 		Arrival:
 		{
+			VisitNumber: visit.MonitoredVehicleJourney.MonitoredCall.VisitNumber,
 			AimedArrivalTime: visit.MonitoredVehicleJourney.MonitoredCall.AimedArrivalTime,
 			ExpectedArrivalTime: visit.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime,
 			AimedDepartureTime: visit.MonitoredVehicleJourney.MonitoredCall.AimedDepartureTime,
@@ -184,6 +185,7 @@ exports.getBusPositionsOnLine = function(req, res){
 
 	busLineModel.findOne({Operator: operatorParam, LineID: lineIDParam}, function(err, busLine){
 		getArrivals(operatorParam, lineIDParam, function(arrivals){
+			console.log("Arrivals: " + arrivals);
 			var buses = [];
 			var cb = _.after(arrivals.length, function(){
 				res.send(buses);
@@ -192,36 +194,41 @@ exports.getBusPositionsOnLine = function(req, res){
 			for(var i = 0; i < arrivals.length; i++){
 				nextStop = arrivals[i].Arrivals[0];
 				var stopVisit = findStopVisitOnRoute(busLine.StopVisits, nextStop);
+
 				(function(currentStopVisit){
-					busStopModel.findOne({Operator: operatorParam, ID: currentStopVisit.PreviousStopID}, function(err, previousBusStop){
-						if(err){ 
-							console.log(err);
-						}else if(previousBusStop == null){
-							buses.push(currentStopVisit);
-						}else{
-							var previousPosition = previousBusStop.Position;
-							var nextPosition = currentStopVisit.Position;
-							
-							var multiplicator = (new Date().getTime - new Date(currentStopVisit.ExpectedArrivalTime).getTime) / currentStopVisit.TimeSinceLast;
-							if(multiplicator > 1){
-								multiplicator = 1;
-							}else if(multiplicator < 0){
-								multiplicator = 0;
+					if(currentStopVisit!=null){
+						busStopModel.findOne({Operator: operatorParam, ID: currentStopVisit.PreviousStopID}, function(err, previousBusStop){
+							if(err){ 
+								console.log(err);
+							}else if(previousBusStop == null){
+								buses.push(currentStopVisit);
+							}else{
+								var previousPosition = previousBusStop.Position;
+								var nextPosition = currentStopVisit.Position;
+								
+								var multiplicator = (new Date(currentStopVisit.ExpectedArrivalTime).getTime - new Date().getTime) / currentStopVisit.TimeSinceLast;
+								if(multiplicator > 1){
+									multiplicator = 1;
+								}else if(multiplicator < 0){
+									multiplicator = 0;
+								}
+
+								var position = {
+									Latitude: previousPosition.Latitude + (nextPosition.Latitude - previousPosition.Latitude) * multiplicator,
+									Longitude: previousPosition.Longitude + (nextPosition.Longitude - previousPosition.Longitude) * multiplicator
+								}
+
+								currentStopVisit.Position.Latitude = position.Latitude;
+								currentStopVisit.Position.Longitude = position.Longitude;
+								buses.push(currentStopVisit);
+
+
 							}
-
-							var position = {
-								Latitude: previousPosition.Latitude + (nextPosition.Latitude - previousPosition.Latitude) * multiplicator,
-								Longitude: previousPosition.Longitude + (nextPosition.Longitude - previousPosition.Longitude) * multiplicator
-							}
-
-							currentStopVisit.Position.Latitude = position.Latitude;
-							currentStopVisit.Position.Longitude = position.Longitude;
-							buses.push(currentStopVisit);
-
-
-						}
+							cb();
+						})
+					}else{
 						cb();
-					})
+					}
 				})(stopVisit);
 
 

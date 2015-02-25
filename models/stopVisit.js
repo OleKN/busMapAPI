@@ -4,8 +4,8 @@ var mongoose = require('mongoose')
 		BusStopID: Number,
 		BusStopName: String,
 		Position: {
-			Longitude: Number,
-			Latitude: Number
+			Latitude: Number,
+			Longitude: Number
 		},
 		StopVisits
 		[
@@ -20,6 +20,7 @@ var mongoose = require('mongoose')
 				DestinationName: String,
 				Arrival:
 				{
+					VisitNumber: Number,
 					AimedArrivalTime: Date,
 					ExpectedArrivalTime: Date,
 					AimedDepartureTime: Date,
