@@ -183,8 +183,8 @@ exports.getBusPositionsOnLine = function(req, res){
 
 
 
-	busLineModel.findOne({Operator: operatorParam, LineID: lineIDParam}, function(err, busLine){
-		getArrivals(operatorParam, lineIDParam, function(arrivals){
+	getArrivals(operatorParam, lineIDParam, function(arrivals){
+		busLineModel.findOne({Operator: operatorParam, LineID: lineIDParam}, function(err, busLine){
 			console.log("Arrivals: " + arrivals);
 			var buses = [];
 			var cb = _.after(arrivals.length, function(){
