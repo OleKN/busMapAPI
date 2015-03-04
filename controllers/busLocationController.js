@@ -199,6 +199,7 @@ exports.getBusPositionsOnLine = function(req, res){
 				(function(currentStopVisit){
 					if(currentStopVisit!=null){
 						busStopModel.findOne({Operator: operatorParam, ID: currentStopVisit.PreviousStopID}, function(err, previousBusStop){
+							currentStopVisit.Transportation = transportation;
 							if(err){ 
 								console.log(err);
 							}else if(previousBusStop == null){
@@ -221,7 +222,7 @@ exports.getBusPositionsOnLine = function(req, res){
 								// ADD bearing!
 								currentStopVisit.Position.Latitude = position.Latitude;
 								currentStopVisit.Position.Longitude = position.Longitude;
-								currentStopVisit.Transportation = transportation;
+
 								buses.push(currentStopVisit);
 
 
