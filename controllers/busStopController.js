@@ -1,6 +1,9 @@
 var mongoose = require('mongoose');
 var busStopModel = require('../models/busStop');
 var busLineModel = require('../models/busLine');
+var gmaputil = require('googlemapsutil');
+
+
 
 exports.getBusStops = function(req,res){
 	var operatorParam = req.params.operator;
@@ -16,14 +19,20 @@ exports.getBusStops = function(req,res){
 exports.getBusStopsOnLine = function(req,res){
 	var operatorParam = req.params.operator;
 	var lineIDParam = req.params.lineID;
+	findBusStopOnLine(operatorParam, lineIDParam, function(busStopList){
+		res.send(busStopList);
+	})
+}
 
+function findBusStopOnLine(operatorParam, lineIDParam, callback){
 	// Finds all bus stop ids on a line
 	busLineModel.find({LineID: lineIDParam})
 	.where('Operator').equals(operatorParam)
 	.exec(function(err, busLine){
 		if(err) return console.error(err);
 		if(busLine==null){
-			res.send();
+			//res.send();
+			callback(null);
 		}
 		var busStopIDs = busLine[0].BusStops;
 		var busStops = [];
@@ -40,13 +49,15 @@ exports.getBusStopsOnLine = function(req,res){
 					return series(busStopIDs.shift());
 				});
 			} else {
-				res.send(busStops);
+				//res.send(busStops);
+				callback(busStops);
 			}
 		}
 		series(busStopIDs.shift());
 
 	})
 }
+
 
 exports.getBusLineInfo = function(req, res){
 	var operatorParam = req.params.operator;
@@ -55,7 +66,28 @@ exports.getBusLineInfo = function(req, res){
 	busLineModel.findOne({Operator: operatorParam , LineID: lineIDParam} , { _id: 0, __v: 0}, function(err, busLine){
 		if(err)
 			return console.error(err);
+
+		var polyline = getDirections(busLine);
+
+		busLine.Polyline = polyline;
 		res.send(busLine);
 	})
 }
 
+
+function getDirections(busLine){
+	if(busLine.StopVisits == null){
+		// Update stopVisits in busLocationController
+		console.log("Empty!");
+		return "hello";
+	}
+
+	// find origin and destination in StopVisit list
+	findBusStopOnLine(busLine.Operator, busLine.LineID, function(busStopList){
+		for(var i=0; i<busStopList.length; i++){
+			console.log(busStopList[i].Position.Latitude + ", " + busStopList[i].Position.Longitude);
+		}
+		console.log("Hello");
+		return "hello to you!";
+	})	
+}
