@@ -217,7 +217,7 @@ exports.getBusPositionsOnLine = function(req, res){
 									Latitude: previousPosition.Latitude + (nextPosition.Latitude - previousPosition.Latitude) * multiplicator,
 									Longitude: previousPosition.Longitude + (nextPosition.Longitude - previousPosition.Longitude) * multiplicator
 								}
-
+								// ADD bearing!
 								currentStopVisit.Position.Latitude = position.Latitude;
 								currentStopVisit.Position.Longitude = position.Longitude;
 								buses.push(currentStopVisit);
@@ -314,6 +314,10 @@ function orderBusStopListForLine(busList, callback){
 
 function updateArrivalTimesInDB(lineID, newStopsList, callback){
 	busLineModel.findOne({LineID: lineID} , function(err, busLine){
+		var stopVisits = [];
+		if(err){
+			console.log(err);
+		}
 		var stopVisits = busLine.StopVisits;
 		if(stopVisits == null){
 			stopVisits = [];
@@ -345,15 +349,6 @@ function updateArrivalTimesInDB(lineID, newStopsList, callback){
 
 				// Another bug is that end stops are not listed with previous stops
 				console.log("Duplicates found when updating arrival times");
-				/*
-
-				console.log("\nDescrepency detected when updating bus stop timing!\n");
-				console.log(existingStopVisit.Stop);
-				console.log("\nDiffers from \n");
-				console.log(newStop);
-				console.log("\n");
-
-				*/
 			}			
 		}
 
