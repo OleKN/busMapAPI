@@ -190,6 +190,7 @@ exports.getBusPositionsOnLine = function(req, res){
 			var cb = _.after(arrivals.length, function(){
 				res.send(buses);
 			});
+			var transportation = busLine.Transportation;
 			var outList = [];
 			for(var i = 0; i < arrivals.length; i++){
 				nextStop = arrivals[i].Arrivals[0];
@@ -220,6 +221,7 @@ exports.getBusPositionsOnLine = function(req, res){
 								// ADD bearing!
 								currentStopVisit.Position.Latitude = position.Latitude;
 								currentStopVisit.Position.Longitude = position.Longitude;
+								currentStopVisit.Transportation = transportation;
 								buses.push(currentStopVisit);
 
 
