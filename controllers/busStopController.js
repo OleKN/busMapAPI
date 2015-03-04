@@ -30,7 +30,7 @@ function findBusStopOnLine(operatorParam, lineIDParam, callback){
 	.where('Operator').equals(operatorParam)
 	.exec(function(err, busLine){
 		if(err) return console.error(err);
-		if(busLine==null){
+		if(busLine==null || busLine.length == 0){
 			//res.send();
 			callback(null);
 		}
