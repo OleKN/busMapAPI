@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var busStopModel = require('../models/busStop');
 var busLineModel = require('../models/busLine');
+var interStopPolylineModel = require('../models/interStopPolyline');
 var gmaputil = require('googlemapsutil');
 var request = require('request');
 
@@ -78,10 +79,8 @@ exports.getBusLineInfo = function(req, res){
 	})
 }
 
-
+// Creates an encoded polyline for a line
 function getDirections(busLine, callback){
-	var key = "AIzaSyDr2_0MXNJJuP0t7sH7qIdNPCDUsY7GUok";
-
 	if(busLine.StopVisits == null){
 		// Update stopVisits in busLocationController
 		console.log("Empty!");
@@ -93,27 +92,116 @@ function getDirections(busLine, callback){
 		if(busStopList.length < 2)
 			return null;
 
-		var origin = "(" + busStopList[0].Position.Latitude + "," + busStopList[0].Position.Longitude + ")";
-
-		var destination = "(" + busStopList[busStopList.length - 1].Position.Latitude + "," + busStopList[busStopList.length - 1].Position.Longitude + ")";
-
-		var waypoints = "";
-		for(var i=1; i<busStopList.length - 1; i++){
-			waypoints += "|(" + busStopList[i].Position.Latitude + "," + busStopList[i].Position.Longitude + ")";
-		}
-		waypoints.slice(1);
-
-		var URL =  'https://maps.googleapis.com/maps/api/directions/json?origin=' + origin +'&destination=' + destination + '&waypoints=' + waypoints + '&key=' + key;
-
-		request({
-		url: URL,
-		json: true
-		}, function(error, response, directions){
-			if(!error && response.statusCode === 200){
-				callback(directions.routes[0].overview_polyline.points);
+		var polyline = "";
+		
+		// This function ensures that the polylines are added in order
+		var addPolylineSnippet = function(previousStop, nextStop){
+			if(previousStop!=null && nextStop!=null){
+				findPolylineBetweenStops(previousStop, nextStop, function(polylineSnippet){
+					polyline += polylineSnippet;
+					addPolylineSnippet(nextStop, busStopList.pop());
+				})
 			}else{
-				callback(null);
+				callback(polyline);
 			}
-		})
+		}
+		// takes the first and second and sends them to the function
+		addPolylineSnippet(busStopList.pop(), busStopList.pop());
 	})	
+}
+
+function findPolylineBetweenStops(busStopA, busStopB, callback){
+	interStopPolylineModel.findOne({PreviousStopID: busStopA.ID, NextStopID: busStopB.ID}, function(err, interStopPolyline){
+		if(err){
+			console.log(err);
+		}else if(!interStopPolyline){
+			getDirectionsFromGoogle(busStopA, busStopB, function(directions){
+
+				interStopPolyline = createPolylineObject(busStopA, busStopB, directions);
+
+				saveInterStopPolylineToDB(interStopPolyline);
+				
+				callback(interStopPolyline.Polyline)
+
+			});
+		}else{
+			callback(interStopPolyline.Polyline);
+		}
+	});
+}
+
+// Finds the locations of the two bus stops and connects them through the Google Directions API
+function getDirectionsFromGoogle(previousStop, nextStop, callback){
+	var key = "AIzaSyDr2_0MXNJJuP0t7sH7qIdNPCDUsY7GUok";
+
+	var origin = "(" + previousStop.Position.Latitude + "," + previousStop.Position.Longitude + ")";
+	var destination = "(" + nextStop.Position.Latitude + "," + nextStop.Position.Longitude + ")";
+	var URL =  'https://maps.googleapis.com/maps/api/directions/json?origin=' + origin +'&destination=' + destination + '&key=' + key;
+	request({
+	url: URL,
+	json: true
+	}, function(error, response, directions){
+		if(!error && response.statusCode === 200){
+			callback(directions);
+		}else{
+			callback(null);
+		}
+	})
+}
+
+function createPolylineObject(previousStop, nextStop, directions){
+	// Reformats and trims the legs of the trip
+	var legs = [];
+	if(!directions){
+		console.log("DIRECTIONS NOT FOUND!");
+		return null;
+	}
+	for(var i = 0; i < directions.routes[0].legs.length; i++){
+		var leg = directions.routes[0].legs[i];
+		var steps = [];
+
+		for(var j = 0; j < leg.steps.length; j++){
+			var step = leg.steps[j];
+			steps.push({
+				Distance: step.distance.value,
+				Polyline: step.polyline.points,
+				Start_location: {
+					Latitude: step.start_location.lat,
+					Longitude: step.start_location.lng
+				},
+				End_location: {
+					Latitude: step.end_location.lat,
+					Longitude: step.end_location.lng
+				}
+			})
+		}
+
+		legs.push({
+			Distance: leg.distance.value,
+			Start_location: {
+				Latitude: leg.start_location.lat,
+				Longitude: leg.start_location.lng
+			},
+			End_location: {
+				Latitude: leg.end_location.lat,
+				Longitude: leg.end_location.lng
+			},
+			Steps: steps
+		});
+	}
+
+	// Creates the interStopPolyline JSON
+	interStopPolyline = new interStopPolylineModel({
+		PreviousStopID: previousStop.ID,
+		NextStopID: nextStop.ID,
+		Polyline: directions.routes[0].overview_polyline.points,
+		Bounds: directions.routes[0].bounds,
+		Legs: legs
+	})
+
+	return interStopPolyline;
+}
+
+function saveInterStopPolylineToDB(interStopPolyline){
+	//SAVE THIS SHIT!
 }
