@@ -321,10 +321,11 @@ function updateArrivalTimesInDB(lineID, newStopsList, callback){
 		if(err){
 			console.log(err);
 		}
-		var stopVisits = busLine.StopVisits;
-		if(stopVisits == null){
-			stopVisits = [];
+		var stopVisits = [];
+		if(busLine != null){
+			stopVisits = busLine.StopVisits;
 		}
+		
 		for(var i=0; i < newStopsList.length; i++){
 			newStop = newStopsList[i];
 			var existingStopVisit = getExistingBusStopInList(stopVisits, newStop);
