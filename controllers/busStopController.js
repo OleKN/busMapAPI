@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var busStopModel = require('../models/busStop');
 var busLineModel = require('../models/busLine');
 var gmaputil = require('googlemapsutil');
+var request = require('request');
 
 
 
@@ -67,27 +68,52 @@ exports.getBusLineInfo = function(req, res){
 		if(err)
 			return console.error(err);
 
-		var polyline = getDirections(busLine);
+		var polyline = getDirections(busLine, function(polyline){
+			console.log(polyline);
+			busLine.Polyline = polyline;
+			res.send(busLine);
+		});
 
-		busLine.Polyline = polyline;
-		res.send(busLine);
+
 	})
 }
 
 
-function getDirections(busLine){
+function getDirections(busLine, callback){
+	var key = "AIzaSyDr2_0MXNJJuP0t7sH7qIdNPCDUsY7GUok";
+
 	if(busLine.StopVisits == null){
 		// Update stopVisits in busLocationController
 		console.log("Empty!");
-		return "hello";
+		return null;
 	}
 
 	// find origin and destination in StopVisit list
 	findBusStopOnLine(busLine.Operator, busLine.LineID, function(busStopList){
-		for(var i=0; i<busStopList.length; i++){
-			console.log(busStopList[i].Position.Latitude + ", " + busStopList[i].Position.Longitude);
+		if(busStopList.length < 2)
+			return null;
+
+		var origin = "(" + busStopList[0].Position.Latitude + "," + busStopList[0].Position.Longitude + ")";
+
+		var destination = "(" + busStopList[busStopList.length - 1].Position.Latitude + "," + busStopList[busStopList.length - 1].Position.Longitude + ")";
+
+		var waypoints = "";
+		for(var i=1; i<busStopList.length - 1; i++){
+			waypoints += "|(" + busStopList[i].Position.Latitude + "," + busStopList[i].Position.Longitude + ")";
 		}
-		console.log("Hello");
-		return "hello to you!";
+		waypoints.slice(1);
+
+		var URL =  'https://maps.googleapis.com/maps/api/directions/json?origin=' + origin +'&destination=' + destination + '&waypoints=' + waypoints + '&key=' + key;
+
+		request({
+		url: URL,
+		json: true
+		}, function(error, response, directions){
+			if(!error && response.statusCode === 200){
+				callback(directions.routes[0].overview_polyline.points);
+			}else{
+				callback(null);
+			}
+		})
 	})	
 }

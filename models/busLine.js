@@ -20,6 +20,7 @@ var mongoose = require('mongoose')
 		Name: String,
 		LineColor: String,
 		Operator: String,
+		Polyline: String,
 		BusStops: [ {
 			type: Number
 		} ],
