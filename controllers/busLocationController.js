@@ -358,10 +358,12 @@ function updateArrivalTimesInDB(lineID, newStopsList, callback){
 
 
 		// Store new values to database
-		busLineModel.update({LineID: busLine.LineID}, {"$set": {StopVisits: stopVisits}}, {upsert: true}, function(err, doc){
-			if(err) console.log(err);
-			callback();
-		});
+		if(busLine != null){
+			busLineModel.update({LineID: busLine.LineID}, {"$set": {StopVisits: stopVisits}}, {upsert: true}, function(err, doc){
+				if(err) console.log(err);
+				callback();
+			});
+		}
 	})	
 }
 
