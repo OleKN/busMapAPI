@@ -47,7 +47,7 @@ function getAllStopVisitsForRoute(operator, lineID, callback){
 			callback([], "No busLineID: " + lineID + " found for operator: " + operator);
 			return null;
 		}
-		
+
 		//var busLine = busLines[0];
 		lineName = busLine.Name;
 		
@@ -229,7 +229,10 @@ exports.getBusPositionsOnLine = function(req, res){
 								var previousPosition = previousBusStop.Position;
 								var nextPosition = currentStopVisit.Position;
 								
-								var multiplicator = (new Date(currentStopVisit.ExpectedArrivalTime).getTime - new Date().getTime) / currentStopVisit.TimeSinceLast;
+								var arrivalDate = new Date(currentStopVisit.ExpectedArrivalTime);
+								var currentDate = new Date();
+								var multiplicator = (arrivalDate.getTime() - currentDate.getTime()) / currentStopVisit.TimeSinceLast;
+								console.log(arrivalDate.getTime() + " - " + currentDate.getTime() + " / " + currentStopVisit.TimeSinceLast + " = " + multiplicator);
 								if(multiplicator > 1){
 									multiplicator = 1;
 								}else if(multiplicator < 0){
