@@ -66,6 +66,9 @@ function updateAllOperators(){
           console.log("updated stops for " + file);
           route.updateBusLines(function(){
             console.log("updated lines for " + file);
+            route.removePolylines(function(){
+              console.log("removed polylines for " + file);
+            })
           });
         });
         

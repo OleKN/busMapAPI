@@ -2,6 +2,7 @@ var mongoose = require('mongoose');
 var request = require('request');
 var busStopModel = require('../../models/busStop');
 var busLineModel = require('../../models/busLine');
+var interStopPolyline = require('../../models/interStopPolyline');
 var coordinator = require('coordinator');
 var _ = require('underscore');
 
@@ -24,7 +25,7 @@ exports.updateBusStops = function(callback){
 	clearDB(busStopModel, function(err){
 		if(err)
 			return console.error(err);
-		console.log("cleared db");
+		console.log("Cleared busStopModel from DB");
 		request({
 		url: busStopsURL,
 		json: true
@@ -87,6 +88,7 @@ exports.updateBusLines = function(callback){
 		if(err) 
 			return console.error(err);
 
+		console.log("Cleared busLineModel from DB");
 		request({
 		url: busLinesURL,
 		json: true
@@ -138,4 +140,13 @@ function saveLineToDB(busLine, busStopList, callback){
 		else
 			callback();
 	})
+}
+
+exports.removePolylines = function(callback){
+	clearDB(interStopPolyline, function(err){
+		if(err){
+			console.log(err);
+		}
+		callback();
+	});
 }

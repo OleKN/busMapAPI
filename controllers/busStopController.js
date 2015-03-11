@@ -221,5 +221,9 @@ function createPolylineObject(previousStop, nextStop, directions){
 }
 
 function saveInterStopPolylineToDB(interStopPolyline){
-	//SAVE THIS SHIT!
+	interStopPolyline.save(function(err, stored){
+		if(err){
+			console.log(err);
+		}
+	});
 }
