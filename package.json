@@ -6,11 +6,13 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "bson": "^0.2.19",
     "coordinator": "^0.4.7",
     "debug": "~2.1.1",
     "express": "^4.11.2",
     "googlemapsutil": "^0.1.7",
-    "mongoose": "^3.8.23",
+    "mongodb": "^1.4.34",
+    "mongoose": "3.8",
     "polyline": "0.0.3",
     "request": "^2.53.0",
     "underscore": "^1.7.0"
