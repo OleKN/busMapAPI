@@ -2,7 +2,8 @@ var mongoose = require('mongoose');
 var busStopModel = require('../models/busStop');
 var busLineModel = require('../models/busLine');
 var interStopPolylineModel = require('../models/interStopPolyline');
-var gmaputil = require('googlemapsutil');
+//var gmaputil = require('googlemapsutil');
+var polylineConverter = require('polyline');
 var request = require('request');
 
 
@@ -70,7 +71,8 @@ exports.getBusLineInfo = function(req, res){
 			return console.error(err);
 
 		var polyline = getDirections(busLine, function(polyline){
-			console.log(polyline);
+			//console.log(polylineConverter.decode(polyline));
+			//console.log(polyline);
 			busLine.Polyline = polyline;
 			res.send(busLine);
 		});
@@ -92,17 +94,28 @@ function getDirections(busLine, callback){
 		if(busStopList.length < 2)
 			return null;
 
-		var polyline = "";
+		//var polyline = "";
+		var polylinePoints = [];
 		
 		// This function ensures that the polylines are added in order
 		var addPolylineSnippet = function(previousStop, nextStop){
 			if(previousStop!=null && nextStop!=null){
 				findPolylineBetweenStops(previousStop, nextStop, function(polylineSnippet){
-					polyline += polylineSnippet;
+					var converted = polylineConverter.decode(polylineSnippet);
+					polylinePoints = polylinePoints.concat(converted);
+					/*if(polyline != ""){
+						var points = polylineConverter.decode(polylineSnippet);
+						var firstPoint = polylineConverter.encode(points[0]);
+						console.log(firstPoint);
+						polylineSnippet.slice(firstPoint.length);
+					}
+					
+					polyline += polylineSnippet;*/
 					addPolylineSnippet(nextStop, busStopList.pop());
 				})
 			}else{
-				callback(polyline);
+				//console.log(polylinePoints);
+				callback(polylineConverter.encode(polylinePoints));
 			}
 		}
 		// takes the first and second and sends them to the function
@@ -154,6 +167,11 @@ function createPolylineObject(previousStop, nextStop, directions){
 	var legs = [];
 	if(!directions){
 		console.log("DIRECTIONS NOT FOUND!");
+		return null;
+	}
+	if(directions.routes[0] == null || directions.routes[0].legs == null){
+		console.log("Error fetching directions");
+		console.log(directions);
 		return null;
 	}
 	for(var i = 0; i < directions.routes[0].legs.length; i++){
