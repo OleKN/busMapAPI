@@ -23,8 +23,14 @@ exports.getRealTimeLineInfo = function(req, res){
 	var operatorParam = req.params.operator;
 	var lineIDParam = req.params.lineID;
 
-	getAllStopVisitsForRoute(operatorParam, lineIDParam, function(arrivalsList){
-		res.send(arrivalsList);
+	getAllStopVisitsForRoute(operatorParam, lineIDParam, function(arrivalsList, err){
+		console.log("Something came back");
+		if(err){
+			console.log(err);
+			res.send("Error: unable to find route");
+		}else{
+			res.send(arrivalsList);
+		}
 	})
 	
 }
@@ -34,10 +40,13 @@ function getAllStopVisitsForRoute(operator, lineID, callback){
 	busLineModel.findOne({Operator: operator, LineID: lineID})
 	.exec(function(err, busLine){
 		// check for errors in response from DB
-		if(err) 
-			return console.error(err);
-		if(!busLine)
-			callback(console.log("No busLineID: " + lineID + " found for operator: " + operator));
+		if(err) {
+			callback([], err);
+			return null;
+		} else if(!busLine){
+			callback([], "No busLineID: " + lineID + " found for operator: " + operator);
+			return null;
+		}
 		
 		//var busLine = busLines[0];
 		lineName = busLine.Name;
@@ -115,13 +124,21 @@ function makeNewVisit(visit){
 exports.getBusArrivalsOnLine = function(req, res){
 	var operatorParam = req.params.operator;
 	var lineIDParam = req.params.lineID;
-	getArrivals(operatorParam, lineIDParam, function(arrivals){
+	getArrivals(operatorParam, lineIDParam, function(arrivals, err){
+		if(err){
+			console.log(err);
+			res.send("Error: unable to find route");
+		}
 		res.send(arrivals);
 	});
 }
 
 function getArrivals(operatorParam, lineIDParam, callback){
-	getAllStopVisitsForRoute(operatorParam, lineIDParam, function(arrivalsList){
+	getAllStopVisitsForRoute(operatorParam, lineIDParam, function(arrivalsList, err){
+		if(err){
+			callback([], err);
+			return null;
+		}
 		var vehicles = [];
 
 		for(var i = 0; i < arrivalsList.length; i++){
@@ -183,7 +200,11 @@ exports.getBusPositionsOnLine = function(req, res){
 
 
 
-	getArrivals(operatorParam, lineIDParam, function(arrivals){
+	getArrivals(operatorParam, lineIDParam, function(arrivals, err){
+		if(err){
+			console.log(err);
+			res.send("Error: Unable to find line");
+		}
 		busLineModel.findOne({Operator: operatorParam, LineID: lineIDParam}, function(err, busLine){
 			console.log("Arrivals: " + arrivals);
 			var buses = [];
