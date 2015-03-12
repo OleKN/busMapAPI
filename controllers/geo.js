@@ -41,5 +41,9 @@ exports.getBearing = function(pos1, pos2){
 	var x = Math.cos(φ1) * Math.sin(φ2) -
 	        Math.sin(φ1) * Math.cos(φ2) * Math.cos(λ2 - λ1);
 	var deg = toDegrees(Math.atan2(y, x));
-	return deg % 360;
+	return deg.mod(360);
+}
+
+Number.prototype.mod = function(n) { 
+	return ((this % n) + n) % n; 
 }
