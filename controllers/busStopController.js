@@ -22,7 +22,11 @@ exports.getBusStopsOnLine = function(req,res){
 	var operatorParam = req.params.operator;
 	var lineIDParam = req.params.lineID;
 	findBusStopOnLine(operatorParam, lineIDParam, function(busStopList){
-		res.send(busStopList);
+		if(busStopList == null){
+			res.send("Unable to find route");
+		}else{
+			res.send(busStopList);
+		}
 	})
 }
 
