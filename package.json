@@ -10,7 +10,6 @@
     "coordinator": "^0.4.7",
     "debug": "~2.1.1",
     "express": "^4.11.2",
-    "googlemapsutil": "^0.1.7",
     "mongodb": "^1.4.34",
     "mongoose": "3.8",
     "polyline": "0.0.3",
