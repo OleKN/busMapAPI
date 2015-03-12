@@ -2,7 +2,6 @@ var mongoose = require('mongoose');
 var busStopModel = require('../models/busStop');
 var busLineModel = require('../models/busLine');
 var interStopPolylineModel = require('../models/interStopPolyline');
-//var gmaputil = require('googlemapsutil');
 var polylineConverter = require('polyline');
 var request = require('request');
 
@@ -133,7 +132,7 @@ function findPolylineBetweenStops(busStopA, busStopB, callback){
 				interStopPolyline = createPolylineObject(busStopA, busStopB, directions);
 
 				saveInterStopPolylineToDB(interStopPolyline);
-				
+
 				callback(interStopPolyline.Polyline)
 
 			});
