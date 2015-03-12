@@ -3,6 +3,7 @@ var busStopModel = require('../models/busStop');
 var busLineModel = require('../models/busLine');
 var busStopController = require('./busStopController');
 var request = require('request');
+var geo = require('./geo');
 var _ = require('underscore');
 
 var busStopVisitURL = "http://reisapi.ruter.no/stopvisit/GetDepartures/"; // + StopID + ?json=true&linenames= + ID
@@ -232,7 +233,7 @@ exports.getBusPositionsOnLine = function(req, res){
 								var arrivalDate = new Date(currentStopVisit.ExpectedArrivalTime);
 								var currentDate = new Date();
 								var multiplicator = (arrivalDate.getTime() - currentDate.getTime()) / currentStopVisit.TimeSinceLast;
-								console.log(arrivalDate.getTime() + " - " + currentDate.getTime() + " / " + currentStopVisit.TimeSinceLast + " = " + multiplicator);
+								
 								if(multiplicator > 1){
 									multiplicator = 1;
 								}else if(multiplicator < 0){
@@ -243,9 +244,12 @@ exports.getBusPositionsOnLine = function(req, res){
 									Latitude: previousPosition.Latitude + (nextPosition.Latitude - previousPosition.Latitude) * multiplicator,
 									Longitude: previousPosition.Longitude + (nextPosition.Longitude - previousPosition.Longitude) * multiplicator
 								}
-								// ADD bearing!
-								currentStopVisit.Position.Latitude = position.Latitude;
+								
+								// Calculate bearing (in radians)
+								currentStopVisit.Bearing = geo.getBearing(previousPosition, nextPosition);
+
 								currentStopVisit.Position.Longitude = position.Longitude;
+								currentStopVisit.Position.Latitude = position.Latitude;
 
 								buses.push(currentStopVisit);
 
