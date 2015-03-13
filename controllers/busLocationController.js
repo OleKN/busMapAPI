@@ -230,7 +230,7 @@ exports.getBusPositionsOnLine = function(req, res){
 								var previousPosition = previousBusStop.Position;
 								var nextPosition = currentStopVisit.Position;
 								
-								var arrivalDate = new Date(currentStopVisit.ExpectedArrivalTime);
+								var arrivalDate = new Date(currentStopVisit.NextBusStopArrival);
 								var currentDate = new Date();
 								var multiplicator = (arrivalDate.getTime() - currentDate.getTime()) / currentStopVisit.TimeSinceLast;
 								
