@@ -280,6 +280,7 @@ function findStopVisitOnRoute(stopVisits, arrival){
 			return {
 				VehicleID: arrival.VehicleID,
 				LineID: arrival.LineID,
+				LineName: arrival.LineName,
 				NextBusStopName: arrival.BusStopName,
 				NextBusStopID: arrival.BusStopID,
 				NextBusStopArrival: arrival.Arrival.ExpectedArrivalTime,
