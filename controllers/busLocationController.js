@@ -234,6 +234,7 @@ exports.getBusPositionsOnLine = function(req, res){
 								var currentDate = new Date();
 								var multiplicator = (arrivalDate.getTime() - currentDate.getTime()) / currentStopVisit.TimeSinceLast;
 								
+
 								if(multiplicator > 1){
 									multiplicator = 1;
 								}else if(multiplicator < 0){
@@ -279,10 +280,13 @@ function findStopVisitOnRoute(stopVisits, arrival){
 			return {
 				VehicleID: arrival.VehicleID,
 				LineID: arrival.LineID,
-				BusStopID: arrival.BusStopID,
+				NextBusStopName: arrival.BusStopName,
+				NextBusStopID: arrival.BusStopID,
+				NextBusStopArrival: arrival.Arrival.ExpectedArrivalTime,
 				Position: arrival.BusStopPosition,
-				ExpectedArrivalTime: arrival.Arrival.ExpectedArrivalTime,
 				DestinationName: arrival.DestinationName,
+				DestinationBusStopID: arrival.DestinationID,
+				DestinationArrival: "null",
 				PreviousStopID: stopVisit.PreviousStopID,
 				TimeSinceLast: stopVisit.TimeSinceLast
 			}
