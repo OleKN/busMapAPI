@@ -7,7 +7,7 @@ var interStopPolylineModel = require('../models/interStopPolyline');
 
 
 // Creates an encoded polyline for a line
-function getDirections(busLine, callback){
+exports.getDirections = function(busLine, callback){
 	if(busLine.StopVisits == null){
 		// Update stopVisits in busLocationController
 		console.log("Empty!");
