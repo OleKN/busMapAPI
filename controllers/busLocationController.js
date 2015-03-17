@@ -62,41 +62,61 @@ function getAllStopVisitsForRoute(operator, lineID, callback){
 
 		// Ask for bus stop visits for every bus stop for a given line
 		for(var i = 0; i < busStopIDs.length; i++){
-			busStopModel.findOne({ID: busStopIDs[i], Operator: operator} , function(err, busStop){
-				if(err || busStop ==null){
-					console.error(err);
-					console.log("Error for busStop: " + busStop);
-					cb(arrivalsList);
-				}else{
-					// Sends a request for all stops, to get real-time information about arrival times
-					request({
-						url: busStopVisitURL + busStop.ID + "?json=true&linenames=" + lineName,
-						json: true
-						}, function(error, response, busStopVisitList){
-							if(!error && response.statusCode === 200){
-								var stopVisits = [];
-								// Store information about each arrival in a nice format
-								for(var x = 0; x < busStopVisitList.length; x++){
-									var newVisit = makeNewVisit(busStopVisitList[x]);
-									stopVisits.push(newVisit);
-								}
-
-								// Store information about each bus stop
-								var newStopVisitJSON = {
-									BusStopID: busStop.ID,
-									BusStopName: busStop.Name,
-									Position: busStop.Position,
-									StopVisits: stopVisits
-								}
-								arrivalsList.push(newStopVisitJSON);
-								cb(arrivalsList);				
-							}else{
-								console.error(error);
-							}
-						}
-					)
-				}
+			getStopVisitsOnStop(operator, busStopIDs[i], lineName, function(stopVisit){
+				if(stopVisit != null)
+					arrivalsList.push(stopVisit);
+				cb(arrivalsList);
 			})
+		}
+	})
+}
+
+
+exports.getStopVisitsOnStop = function(req, res){
+	var operator = req.params.operator;
+	var stopID = req.params.stopID;
+	var lineID = req.params.lineID;
+
+	busLineModel.findOne({Operator: operator, LineID: lineID}, function(err, busLine){
+		getStopVisitsOnStop(operator, stopID, busLine.Name, function(stopVisits){
+			res.send(stopVisits);
+		});
+	});
+}
+
+function getStopVisitsOnStop(operator, stopID, lineName, callback){
+	busStopModel.findOne({ID: stopID, Operator: operator} , function(err, busStop){
+		if(err || busStop ==null){
+			console.error(err);
+			console.log("Error for busStop: " + busStop);
+			callback(null);
+		}else{
+			// Sends a request for all stops, to get real-time information about arrival times
+			request({
+				url: busStopVisitURL + busStop.ID + "?json=true&linenames=" + lineName,
+				json: true
+				}, function(error, response, busStopVisitList){
+					if(!error && response.statusCode === 200){
+						var stopVisits = [];
+						// Store information about each arrival in a nice format
+						for(var x = 0; x < busStopVisitList.length; x++){
+							var newVisit = makeNewVisit(busStopVisitList[x]);
+							stopVisits.push(newVisit);
+						}
+
+						// Store information about each bus stop
+						var newStopVisitJSON = {
+							BusStopID: busStop.ID,
+							BusStopName: busStop.Name,
+							Position: busStop.Position,
+							StopVisits: stopVisits
+						}
+						callback(newStopVisitJSON);
+					}else{
+						console.error(error);
+					}
+				}
+			)
 		}
 	})
 }
@@ -130,6 +150,10 @@ exports.getBusArrivalsOnLine = function(req, res){
 			console.log(err);
 			res.send("Error: unable to find route");
 		}
+
+		//Add previous
+
+
 		res.send(arrivals);
 	});
 }
@@ -301,6 +325,7 @@ function findStopVisitOnRoute(stopVisits, arrival){
 	}
 	return null;
 }
+
 
 // Function that will ensure that the bus stops 
 // listed for a given route are in the correct order
