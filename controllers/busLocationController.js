@@ -171,6 +171,10 @@ function getArrivals(operatorParam, lineIDParam, callback){
 				return 1;
 			if(a.Arrival.ExpectedArrivalTime < b.Arrival.ExpectedArrivalTime)
 				return -1
+			if(a.Arrival.VisitNumber > b.Arrival.VisitNumber)
+				return 1;
+			if(a.Arrival.VisitNumber < b.Arrival.VisitNumber)
+				return -1;
 			return 0;
 		})
 
