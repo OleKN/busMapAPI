@@ -35,6 +35,9 @@ app.get('/Bus/getBusPositionsOnLine/:operator/:lineID', busLocationController.ge
 app.get('/getAvailableOperators/', getOperatorNames);
 
 
+app.get('/Bus/getStopVisitsOnStop/:operator/:stopID/:lineID', busLocationController.getStopVisitsOnStop);
+
+
 
 // Starts the server
 var server = app.listen(3000, function () {
