@@ -151,10 +151,66 @@ exports.getBusArrivalsOnLine = function(req, res){
 			res.send("Error: unable to find route");
 		}
 
-		//Add previous
+		var cb = _.after(arrivals.length, function(){
+			res.send(arrivals);
+		})
 
 
-		res.send(arrivals);
+
+		// GetBusLineInfo
+		busLineModel.findOne({Operator: operatorParam , LineID: lineIDParam}, function(err, busLine){
+			var stopVisits = busLine.StopVisits;
+			if(err)
+				return console.error(err);
+			for(var i=0; i < arrivals.length; i++){
+
+				for(var j=0; j < stopVisits.length; j++){
+
+					(function(arrival, stopVisit, index){
+
+						var nextStopID = arrival.Arrivals[0].BusStopID;
+						var direction = arrival.Arrivals[0].Direction;
+						if(stopVisit.BusStopID == nextStopID && stopVisit.Direction == direction){
+							if(stopVisits[j].PreviousStopID != null){
+								var timeOfArrival = new Date(arrivals[i].Arrivals[0].Arrival.ExpectedArrivalTime);
+								
+								//CHANGE TIMEZONE OF THIS SHIT!
+								var previousTimeOfArrival = new Date(timeOfArrival.getTime() - stopVisit.TimeSinceLast);
+
+								busStopModel.findOne({Operator: operatorParam, ID: stopVisit.PreviousStopID}, function(err, previousBusStop){
+									arrivals[index].Arrivals.unshift({
+										Guess: true,
+										VehicleID: arrival.Arrivals[0].VehicleID,
+										LineID: arrival.Arrivals[0].LineID,
+										LineName: arrival.Arrivals[0].LineName,
+										OriginID: arrival.Arrivals[0].OriginID,
+										OriginName: arrival.Arrivals[0].OriginName,
+										DestinationID: arrival.Arrivals[0].DestinationID,
+										DestinationName: arrival.Arrivals[0].DestinationName,
+										Arrival: {
+											VisitNumber: -1,
+											AimedArrivalTime: previousTimeOfArrival,
+											ExpectedArrivalTime: previousTimeOfArrival,
+											AimedDepartureTime: previousTimeOfArrival,
+											ExpectedDepartureTime: previousTimeOfArrival
+										},
+										BusStopID: previousBusStop.ID,
+										BusStopName: previousBusStop.Name,
+										BusStopPosition: previousBusStop.Position
+									});
+									cb();
+								})
+							}else{cb();}
+						}
+					})(arrivals[i], stopVisits[j], i);
+				}
+			}
+
+			//res.send(arrivals);
+		})
+
+
+		
 	});
 }
 
