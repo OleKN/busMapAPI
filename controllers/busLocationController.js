@@ -136,6 +136,7 @@ function makeNewVisit(visit){
 			VisitNumber: visit.MonitoredVehicleJourney.MonitoredCall.VisitNumber,
 			AimedArrivalTime: visit.MonitoredVehicleJourney.MonitoredCall.AimedArrivalTime,
 			ExpectedArrivalTime: visit.MonitoredVehicleJourney.MonitoredCall.ExpectedArrivalTime,
+			ExpectedArrivalTimeMS: new Date(visit.MonitoredVehicleJourney.MonitoredCall.ExpectedDepartureTime).getTime(),
 			AimedDepartureTime: visit.MonitoredVehicleJourney.MonitoredCall.AimedDepartureTime,
 			ExpectedDepartureTime: visit.MonitoredVehicleJourney.MonitoredCall.ExpectedDepartureTime
 		}
@@ -191,6 +192,7 @@ exports.getBusArrivalsOnLine = function(req, res){
 											VisitNumber: -1,
 											AimedArrivalTime: previousTimeOfArrival,
 											ExpectedArrivalTime: previousTimeOfArrival,
+											ExpectedArrivalTimeMS: previousTimeOfArrival.getTime(),
 											AimedDepartureTime: previousTimeOfArrival,
 											ExpectedDepartureTime: previousTimeOfArrival
 										},
@@ -370,6 +372,7 @@ function findStopVisitOnRoute(stopVisits, arrival){
 				BusStopID: arrival.BusStopID,
 				NextBusStopArrival: arrival.Arrival.ExpectedArrivalTime,
 				ExpectedArrivalTime: arrival.Arrival.ExpectedArrivalTime,
+				ExpectedArrivalTimeMS: arrival.Arrival.ExpectedArrivalTime.getTime(),
 				Position: arrival.BusStopPosition,
 				DestinationName: arrival.DestinationName,
 				DestinationBusStopID: arrival.DestinationID,
