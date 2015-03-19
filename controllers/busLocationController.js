@@ -160,11 +160,13 @@ exports.getBusArrivalsOnLine = function(req, res){
 
 		// GetBusLineInfo
 		busLineModel.findOne({Operator: operatorParam , LineID: lineIDParam}, function(err, busLine){
+			var transportation = busLine.Transportation;
+
 			var stopVisits = busLine.StopVisits;
 			if(err)
 				return console.error(err);
 			for(var i=0; i < arrivals.length; i++){
-
+				arrivals[i].Transportation = transportation;
 				for(var j=0; j < stopVisits.length; j++){
 
 					(function(arrival, stopVisit, index){
