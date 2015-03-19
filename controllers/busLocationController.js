@@ -152,6 +152,7 @@ exports.getBusArrivalsOnLine = function(req, res){
 			res.send("Error: unable to find route");
 		}
 
+		console.log("Length = " + arrivals.length);
 		var cb = _.after(arrivals.length, function(){
 			console.log("callback called");
 			res.send(arrivals);
@@ -175,8 +176,8 @@ exports.getBusArrivalsOnLine = function(req, res){
 						var nextStopID = arrival.Arrivals[0].BusStopID;
 						var direction = arrival.Arrivals[0].Direction;
 						if(stopVisit.BusStopID == nextStopID && stopVisit.Direction == direction){
-							if(stopVisits[j].PreviousStopID != null){
-								var timeOfArrival = new Date(arrivals[i].Arrivals[0].Arrival.ExpectedArrivalTime);
+							if(stopVisit.PreviousStopID != null){
+								var timeOfArrival = new Date(arrival.Arrivals[0].Arrival.ExpectedArrivalTime);
 								
 								//CHANGE TIMEZONE OF THIS SHIT!
 								var previousTimeOfArrival = new Date(timeOfArrival.getTime() - stopVisit.TimeSinceLast);
@@ -203,9 +204,10 @@ exports.getBusArrivalsOnLine = function(req, res){
 										BusStopName: previousBusStop.Name,
 										BusStopPosition: previousBusStop.Position
 									});
+									console.log("c");
 									cb();
 								})
-							}else{cb();}
+							}else{console.log("c2"); cb();}
 						}
 					})(arrivals[i], stopVisits[j], i);
 				}
