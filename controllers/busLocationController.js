@@ -204,7 +204,7 @@ exports.getBusArrivalsOnLine = function(req, res){
 									});
 									cb();
 								})
-							}else{cb();}
+							}//else{cb();}
 						}
 					})(arrivals[i], stopVisits[j], i);
 				}
