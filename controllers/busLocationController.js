@@ -153,6 +153,7 @@ exports.getBusArrivalsOnLine = function(req, res){
 		}
 
 		var cb = _.after(arrivals.length, function(){
+			console.log("callback called");
 			res.send(arrivals);
 		})
 
@@ -204,7 +205,7 @@ exports.getBusArrivalsOnLine = function(req, res){
 									});
 									cb();
 								})
-							}//else{cb();}
+							}else{cb();}
 						}
 					})(arrivals[i], stopVisits[j], i);
 				}
