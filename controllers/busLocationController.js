@@ -101,7 +101,8 @@ function getStopVisitsOnStop(operator, stopID, lineName, callback){
 						// Store information about each arrival in a nice format
 						for(var x = 0; x < busStopVisitList.length; x++){
 							var newVisit = makeNewVisit(busStopVisitList[x]);
-							stopVisits.push(newVisit);
+							if(newVisit.VehicleID != null)
+								stopVisits.push(newVisit);
 						}
 
 						// Store information about each bus stop
