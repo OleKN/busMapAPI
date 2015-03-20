@@ -78,6 +78,9 @@ exports.getStopVisitsOnStop = function(req, res){
 	var lineID = req.params.lineID;
 
 	busLineModel.findOne({Operator: operator, LineID: lineID}, function(err, busLine){
+		if(err || busLine==null){
+			res.send("Error line not found");
+		})
 		getStopVisitsOnStop(operator, stopID, busLine.Name, function(stopVisits){
 			res.send(stopVisits);
 		});
