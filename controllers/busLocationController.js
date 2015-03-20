@@ -317,7 +317,7 @@ exports.getBusPositionsOnLine = function(req, res){
 							if(err){ 
 								console.log(err);
 							}else if(previousBusStop == null){
-								currentStopVisit.Bearing = null;
+								currentStopVisit.Bearing = -1.0;
 								buses.push(currentStopVisit);
 							}else{
 								var previousPosition = previousBusStop.Position;
