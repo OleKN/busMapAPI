@@ -378,7 +378,7 @@ function findStopVisitOnRoute(stopVisits, arrival){
 				BusStopID: arrival.BusStopID,
 				NextBusStopArrival: arrival.Arrival.ExpectedArrivalTime,
 				ExpectedArrivalTime: arrival.Arrival.ExpectedArrivalTime,
-				ExpectedArrivalTimeMS: arrival.Arrival.ExpectedArrivalTime.getTime(),
+				ExpectedArrivalTimeMS: new Date(arrival.Arrival.ExpectedArrivalTime).getTime(),
 				Position: arrival.BusStopPosition,
 				DestinationName: arrival.DestinationName,
 				DestinationBusStopID: arrival.DestinationID,
