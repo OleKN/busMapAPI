@@ -193,7 +193,7 @@ exports.getBusArrivalsOnLine = function(req, res){
 						var nextStopID = arrival.Arrivals[0].BusStopID;
 						var direction = arrival.Arrivals[0].Direction;
 						var destID = arrival.Arrivals[0].DestinationID;
-						if(stopVisit.BusStopID == nextStopID && stopVisit.Direction == direction && stopVisits.DestinationID == destID){
+						if(stopVisit.BusStopID == nextStopID && stopVisit.Direction == direction && stopVisit.DestinationID == destID)){
 							if(stopVisit.PreviousStopID != null){
 								var timeOfArrival = new Date(arrival.Arrivals[0].Arrival.ExpectedArrivalTime);
 								
