@@ -21,6 +21,8 @@ exports.getBusLinesByOperator = function(req, res){
 
 // Returns a list of all bus stops on a line, with Real-Time arrival times of buses on those stops
 exports.getRealTimeLineInfo = function(req, res){
+	var date = new Date();
+	console.log(date + " getRealTimeLineInfo");
 	var operatorParam = req.params.operator;
 	var lineIDParam = req.params.lineID;
 
@@ -73,14 +75,19 @@ function getAllStopVisitsForRoute(operator, lineID, callback){
 
 
 exports.getStopVisitsOnStop = function(req, res){
+
 	var operator = req.params.operator;
 	var stopID = req.params.stopID;
 	var lineID = req.params.lineID;
 
+	var date = new Date();
+	console.log(date + " getStopVisitsOnStop/" + operator + "/" + stopID + "/" + lineID);
+
+
 	busLineModel.findOne({Operator: operator, LineID: lineID}, function(err, busLine){
 		if(err || busLine==null){
 			res.send("Error line not found");
-		})
+		}
 		getStopVisitsOnStop(operator, stopID, busLine.Name, function(stopVisits){
 			res.send(stopVisits);
 		});
@@ -148,8 +155,13 @@ function makeNewVisit(visit){
 }
 
 exports.getBusArrivalsOnLine = function(req, res){
+	
 	var operatorParam = req.params.operator;
 	var lineIDParam = req.params.lineID;
+
+	var date = new Date();
+	console.log(date + " getBusArrivalsOnLine/" + operatorParam + "/" + lineIDParam);
+
 	getArrivals(operatorParam, lineIDParam, function(arrivals, err){
 		if(err){
 			console.log(err);
@@ -159,7 +171,7 @@ exports.getBusArrivalsOnLine = function(req, res){
 		console.log("Length = " + arrivals.length);
 		var cb = _.after(arrivals.length, function(){
 			console.log("callback called");
-			//res.send(arrivals);
+			res.send(arrivals);
 		})
 
 
@@ -293,7 +305,9 @@ function getArrivals(operatorParam, lineIDParam, callback){
 exports.getBusPositionsOnLine = function(req, res){
 	var operatorParam = req.params.operator;
 	var lineIDParam = req.params.lineID;
-
+	
+	var date = new Date();
+	console.log(date + " getBusPositionsOnLine" + "/" + operatorParam + "/" + lineIDParam);
 
 
 	getArrivals(operatorParam, lineIDParam, function(arrivals, err){
