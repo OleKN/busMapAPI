@@ -10,6 +10,9 @@ var request = require('request');
 exports.getBusStops = function(req,res){
 	var operatorParam = req.params.operator;
 
+	var date = new Date();
+	console.log(date + " getBusStops/" + operatorParam);
+
 	busStopModel.find({Operator: operatorParam} , { _id: 0, __v: 0}, function(err, busStopList){
 		if(err)
 			return console.error(err);
@@ -68,16 +71,17 @@ exports.getBusLineInfo = function(req, res){
 	var operatorParam = req.params.operator;
 	var lineIDParam = req.params.lineID;
 
+	var date = new Date();
+	console.log(date + " getBusLineInfo/" + operatorParam + "/" + lineIDParam);
+
 	busLineModel.findOne({Operator: operatorParam , LineID: lineIDParam} , { _id: 0, __v: 0}, function(err, busLine){
 		if(err)
 			return console.error(err);
 
-		var polyline = directions.getDirections(busLine, function(polyline){
-			busLine.Polyline = polyline;
+		//var polyline = directions.getDirections(busLine, function(polyline){
+		//	busLine.Polyline = polyline;
 			res.send(busLine);
-		});
-
-
+		//});
 	})
 }
 

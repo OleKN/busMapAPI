@@ -159,7 +159,7 @@ exports.getBusArrivalsOnLine = function(req, res){
 		console.log("Length = " + arrivals.length);
 		var cb = _.after(arrivals.length, function(){
 			console.log("callback called");
-			res.send(arrivals);
+			//res.send(arrivals);
 		})
 
 
