@@ -174,8 +174,6 @@ exports.getBusArrivalsOnLine = function(req, res){
 			res.send(arrivals);
 		})
 
-
-
 		// GetBusLineInfo
 		busLineModel.findOne({Operator: operatorParam , LineID: lineIDParam}, function(err, busLine){
 			var transportation = busLine.Transportation;
@@ -188,10 +186,11 @@ exports.getBusArrivalsOnLine = function(req, res){
 				for(var j=0; j < stopVisits.length; j++){
 
 					(function(arrival, stopVisit, index){
-
+						
 						var nextStopID = arrival.Arrivals[0].BusStopID;
 						var direction = arrival.Arrivals[0].Direction;
-						if(stopVisit.BusStopID == nextStopID && stopVisit.Direction == direction){
+						var destID = arrival.Arrivals[0].DestinationID;
+						if(stopVisit.BusStopID == nextStopID && stopVisit.Direction == direction && stopVisit.DestinationID == destID){
 							if(stopVisit.PreviousStopID != null){
 								var timeOfArrival = new Date(arrival.Arrivals[0].Arrival.ExpectedArrivalTime);
 								
@@ -222,7 +221,7 @@ exports.getBusArrivalsOnLine = function(req, res){
 									});
 									console.log("c");
 									cb();
-								})
+							})
 							}else{console.log("c2"); cb();}
 						}
 					})(arrivals[i], stopVisits[j], i);
