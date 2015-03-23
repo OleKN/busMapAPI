@@ -221,9 +221,10 @@ exports.getBusArrivalsOnLine = function(req, res){
 										BusStopPosition: previousBusStop.Position
 									});
 									console.log("c");
+									console.log(stopVisit);
 									cb();
 								})
-							}else{console.log("c2"); cb();}
+							}else{console.log("c2"); console.log(stopVisit); cb();}
 						}
 					})(arrivals[i], stopVisits[j], i);
 				}
