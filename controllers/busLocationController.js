@@ -89,6 +89,7 @@ exports.getStopVisitsOnStop = function(req, res){
 			res.send("Error line not found");
 		}
 		getStopVisitsOnStop(operator, stopID, busLine.Name, function(stopVisits){
+			stopVisits.Transportation = busLine.Transportation;
 			res.send(stopVisits);
 		});
 	});
