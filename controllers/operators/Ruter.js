@@ -7,7 +7,7 @@ var coordinator = require('coordinator');
 var _ = require('underscore');
 
 var busStopsURL = "http://reisapi.ruter.no/Place/GetStopsRuter?json=true";
-var busLinesURL = "http://reisapi.ruter.no/Line/GetLines?json=true";
+var busLinesURL = "http://reisapi.ruter.no/Line/GetLinesRuter?json=true";
 var busStopsByLineURL = "http://reisapi.ruter.no/Line/GetStopsByLineID/"; // + ID + "?json=true"
 var operatorName = "Ruter";
 var coordinateSystem = "utm";
